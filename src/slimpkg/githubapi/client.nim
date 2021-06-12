@@ -24,7 +24,7 @@
 ##
 ##   var client = newGithubApiClient("b24123832b745c3fe5e4e6606het7co73e31f21")
 
-import httpclient, tables, ospaths, strutils, json, cgi
+import httpclient, tables, ospaths, strutils, json, cgi, uri
 from net import SslCVerifyMode, newContext, SslContext
 type
   GithubApiClient* = ref object
@@ -96,8 +96,9 @@ proc seqTo[T](data: string): seq[T] =
 
 proc request*(client: GithubApiClient, path: string, body: string = "", query: JsonNode = nil,
     httpMethod: string = $HttpGet): Response =
-  var url = client.baseUrl / path & toQueryString(query)
+  var url = $(parseUri(client.baseUrl) / path) & toQueryString(query)
   var headers: HttpHeaders = nil
   if client.accessToken.len > 0:
     headers = newHttpHeaders({"Authorization": "token " & client.accessToken})
   client.httpClient.request(url, httpMethod, body, headers)
+
