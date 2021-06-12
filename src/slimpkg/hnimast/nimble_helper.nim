@@ -73,6 +73,31 @@ proc getStrValues(node: PNode): seq[string] =
 
   return values
 
+proc parseRequiresArg(node:seq[PNode]):seq[PkgTuple] = 
+  for arg in node:
+    case arg.kind:
+      of hast_common.nkStrKinds:
+        for req in arg.getStrVal().multiSplit():
+          result.add parseRequires(req)
+
+      of nkStmtList:
+        for dep in arg:
+          for req in dep.getStrVal().multiSplit():
+            result.add parseRequires(req)
+
+      of nkIdent, nkExprEqExpr, nkInfix:
+        # Expr eq expr first encountered in `fision`
+        raise NimsParseFail(
+          msg: "Cannot get property requires from " & $arg.kind)
+
+      of nkPrefix:
+        for req1 in arg.getStrValues():
+          for req2 in req1.multiSplit():
+            result.add parseRequires(req2)
+      else:
+        raiseImplementError(
+          "Unhandled node kind for requires argument: \n" &
+            treeRepr(arg))
 
 proc parsePackageInfoNims*(
     text: string, path: string = "<file>"): options.Option[PackageInfo] =
@@ -127,38 +152,18 @@ proc parsePackageInfoNims*(
         else:
           case node[0].getStrVal().normalize:
             of "requires":
-              for arg in node[1 ..^ 1]:
-                case arg.kind:
-                  of hast_common.nkStrKinds:
-                    for req in arg.getStrVal().multiSplit():
-                      res.requires.add parseRequires(req)
-
-                  of nkStmtList:
-                    for dep in arg:
-                      for req in dep.getStrVal().multiSplit():
-                        res.requires.add parseRequires(req)
-
-                  of nkIdent, nkExprEqExpr, nkInfix:
-                    # Expr eq expr first encountered in `fision`
-                    raise NimsParseFail(
-                      msg: "Cannot get property requires from " & $arg.kind)
-
-                  of nkPrefix:
-                    for req1 in arg.getStrValues():
-                      for req2 in req1.multiSplit():
-                        res.requires.add parseRequires(req2)
-
-
-                  else:
-                    raiseImplementError(
-                      "Unhandled node kind for requires argument: \n" &
-                        treeRepr(arg))
-
+              res.requires.add parseRequiresArg(node[1 ..^ 1])
             of "task":
-              # for c in node[^1]:
-              #   echo c.kind
-              #   echo c[0].getStrVal().normalize() == "requires"
-              res.nimbleTasks.incl node[1].getStrVal()
+              let taskName = node[1].getStrVal()
+              for c in node[^1]:
+                # echo c.kind
+                if c[0].getStrVal().normalize() == "requires":
+                  if res.taskDeps.hasKey(taskName):
+                    res.taskDeps[taskName].add parseRequiresArg(c[1 ..^ 1])
+                  else:
+                    res.taskDeps[taskName] = parseRequiresArg(c[1 ..^ 1])
+                
+              res.nimbleTasks.incl taskName
             of "after": res.postHooks.incl node[1].getStrVal()
             of "before": res.postHooks.incl node[1].getStrVal()
             of "foreigndep": res.foreignDeps.add node[1].getStrVal()

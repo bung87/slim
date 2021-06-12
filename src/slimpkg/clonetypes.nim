@@ -78,7 +78,7 @@ from net import SslError
   const imps = [nkImportExceptStmt, nkImportStmt, nkFromStmt, nkImportStmt]
   # nkTypeSection or (it.kind == nkProcDef and $(it[0][^1]) in ["initPackageInfo","getInstalledPkgsMin","findNimbleFile","readNimbleLink","readMetaData","getNameVersion","resolveAlias","getPackageList","readPackageList"]
   # client.copyNimble("src/nimblepkg/packageinfo.nim",prepend, it.kind notin imps )
-  client.copyNimble("src/nimblepkg/packageinfo.nim")
+  # client.copyNimble("src/nimblepkg/packageinfo.nim")
   # client.copyNimble("src/nimblepkg/version.nim")
   # client.copyHnimast("src/hnimast/hast_common.nim")
   # client.copyNimble("src/nimblepkg/packageparser.nim")
@@ -86,5 +86,12 @@ from net import SslError
   # client.copyNimble("src/nimblepkg/options.nim")
   # client.copyNimble("src/nimblepkg/config.nim")
   # client.copyNimble("src/nimblepkg/tools.nim")
+  client.copyNimble("src/nimblepkg/download.nim")
+  client.copyNimble("src/nimblepkg/packageinstaller.nim")
+  client.copyNimble("src/nimblepkg/publish.nim")
+  client.copyNimble("src/nimblepkg/nimscriptexecutor.nim")
+  client.copyNimble("src/nimblepkg/nimscriptwrapper.nim")
+  client.copyNimble("src/nimblepkg/reversedeps.nim")
+  client.copyNimble("src/nimblepkg/init.nim")
 
 

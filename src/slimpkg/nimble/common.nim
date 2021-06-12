@@ -38,6 +38,7 @@ when not defined(nimscript):
       installExt*: seq[string]
       requires*: seq[PkgTuple]
       bin*: Table[string, string]
+      taskDeps*:Table[string, seq[PkgTuple]]
       binDir*: string
       srcDir*: string
       backend*: string

@@ -1,7 +1,8 @@
 import os
 import slimpkg/hnimast/nimble_helper
 # import slimpkg/submodule
-import sets
+import sets,tables
+
 when isMainModule:
   let p = currentSourcePath.parentDir.parentDir / "slim.nimble"
   echo p
@@ -9,3 +10,4 @@ when isMainModule:
   let info = parsePackageInfo(c)
   echo $info.nimbleTasks
   echo $info.requires
+  echo $info.taskDeps

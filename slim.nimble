@@ -6,13 +6,22 @@ description   = "nim package manager"
 license       = "MIT"
 srcDir        = "src"
 installExt    = @["nim"]
-bin           = @["slim"]
+namedBin = {"slim": "slimpkg/nimble/nimble.nim"}.toTable()
+
 
 
 # Dependencies
 
 requires "nim >= 1.4.8"
+requires "hmisc"
 requires "compiler"
 
+when defined(nimdistros):
+  import distros
+  if detectOs(Ubuntu):
+    foreignDep "libssl-dev"
+  else:
+    foreignDep "openssl"
+
 task atask, "des":
-  requires "b"
+  requires "asynctest"
