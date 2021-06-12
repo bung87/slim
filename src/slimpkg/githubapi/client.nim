@@ -25,34 +25,34 @@
 ##   var client = newGithubApiClient("b24123832b745c3fe5e4e6606het7co73e31f21")
 
 import httpclient, tables, ospaths, strutils, json, cgi
-
+from net import SslCVerifyMode, newContext, SslContext
 type
-    GithubApiClient* = ref object
-        ## The client object is responsible for connecting everything else to the GitHub API. It
-        ## wraps `HttpClient` and provides a layer of abstraction on top.
-        httpClient: HttpClient
-        baseUrl*: string
-        accessToken*: string
+  GithubApiClient* = ref object
+    ## The client object is responsible for connecting everything else to the GitHub API. It
+    ## wraps `HttpClient` and provides a layer of abstraction on top.
+    httpClient: HttpClient
+    baseUrl*: string
+    accessToken*: string
 
 proc toQueryString*(json: JsonNode): string =
-    ## Take a json node and turn it into a query string to be sent to GitHub
-    if json == nil: return ""
-    result = ""
-    var
-        sep = '?'
-        strVal = ""
-    for key, val in json:
-        case val.kind
-        of JString:
-            strVal = val.getStr()
-        of JNull: continue
-        else:
-            strVal = $val
-        result.add(sep)
-        result.add(key)
-        result.add('=')
-        result.add(encodeUrl(strVal))
-        sep = '&'
+  ## Take a json node and turn it into a query string to be sent to GitHub
+  if json == nil: return ""
+  result = ""
+  var
+    sep = '?'
+    strVal = ""
+  for key, val in json:
+    case val.kind
+    of JString:
+      strVal = val.getStr()
+    of JNull: continue
+    else:
+      strVal = $val
+    result.add(sep)
+    result.add(key)
+    result.add('=')
+    result.add(encodeUrl(strVal))
+    sep = '&'
 
 proc newGithubApiClient*(
     accessToken: string = "",
@@ -60,30 +60,44 @@ proc newGithubApiClient*(
     maxRedirects = 5,
     proxy: Proxy = nil,
     timeout = -1): GithubApiClient =
-    ## Create a new instance of the ``GithubApiClient`` object
+  ## Create a new instance of the ``GithubApiClient`` object
+  var mproxy = proxy
+  if mproxy == nil:
+    var url = ""
+    try:
+      if existsEnv("https_proxy"):
+        url = getEnv("https_proxy")
+      elif existsEnv("http_proxy"):
+        url = getEnv("http_proxy")
+    except ValueError:
+      echo "Unable to parse proxy from environment variables."
+    if url.len > 0:
+      mproxy = newProxy(url = url)
+  let ctx = newContext(verifyMode = CVerifyPeer)
+  var httpClient = newHttpClient(userAgent, maxRedirects = maxRedirects, sslContext = ctx, proxy = mproxy,
+      timeout = timeout)
+  httpClient.headers = newHttpHeaders({
+      # "Accept": "application/vnd.github.v3+json",
+    "Accept": "application/vnd.github.mercy-preview+json", # Allows use of preview APIs
+    "Content-Type": "application/json"
+  })
 
-    var httpClient = newHttpClient(userAgent, maxRedirects, nil, proxy, timeout)
-    httpClient.headers = newHttpHeaders({
-        # "Accept": "application/vnd.github.v3+json",
-        "Accept": "application/vnd.github.mercy-preview+json", # Allows use of preview APIs
-        "Content-Type": "application/json"
-    })
-
-    GithubApiClient(
-        httpClient: httpClient,
-        baseUrl: "https://api.github.com",
-        accessToken: accessToken
-    )
+  GithubApiClient(
+      httpClient: httpClient,
+      baseUrl: "https://api.github.com",
+      accessToken: accessToken
+  )
 
 proc seqTo[T](data: string): seq[T] =
-    var json = parseJson(data)
-    result = @[]
-    for repo in json:
-        result.add(repo.to(T))
+  var json = parseJson(data)
+  result = @[]
+  for repo in json:
+    result.add(repo.to(T))
 
-proc request*(client: GithubApiClient, path: string, body: string = "", query: JsonNode = nil, httpMethod: string = $HttpGet): Response =
-    var url = client.baseUrl / path & toQueryString(query)
-    var headers: HttpHeaders = nil
-    if client.accessToken.len > 0:
-        headers = newHttpHeaders({ "Authorization": "token " & client.accessToken })
-    client.httpClient.request(url, httpMethod, body, headers)
+proc request*(client: GithubApiClient, path: string, body: string = "", query: JsonNode = nil,
+    httpMethod: string = $HttpGet): Response =
+  var url = client.baseUrl / path & toQueryString(query)
+  var headers: HttpHeaders = nil
+  if client.accessToken.len > 0:
+    headers = newHttpHeaders({"Authorization": "token " & client.accessToken})
+  client.httpClient.request(url, httpMethod, body, headers)

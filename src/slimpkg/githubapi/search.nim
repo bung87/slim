@@ -10,15 +10,15 @@ proc search*(
     limit: int = 100,
     page: int = 1): Response =
 
-    var data = %*{
-        "q": query,
-        "sort": sort,
-        "order": order,
-        "per_page": limit,
-        "page": page
-    }
-    var path = "/search" / searchType
-    client.request(path, query = data)
+  var data = %*{
+      "q": query,
+      "sort": sort,
+      "order": order,
+      "per_page": limit,
+      "page": page
+  }
+  var path = "/search" / searchType
+  client.request(path, query = data)
 
 proc searchRepositories*(
     client: GithubApiClient,
@@ -28,7 +28,7 @@ proc searchRepositories*(
     limit: int = 100,
     page: int = 1): Response =
 
-    search(client, "repositories", query, sort, order, limit, page)
+  search(client, "repositories", query, sort, order, limit, page)
 
 proc searchCommits*(
     client: GithubApiClient,
@@ -38,7 +38,7 @@ proc searchCommits*(
     limit: int = 100,
     page: int = 1): Response =
 
-    search(client, "commits", query, sort, order, limit, page)
+  search(client, "commits", query, sort, order, limit, page)
 
 proc searchCode*(
     client: GithubApiClient,
@@ -48,7 +48,7 @@ proc searchCode*(
     limit: int = 100,
     page: int = 1): Response =
 
-    search(client, "code", query, sort, order, limit, page)
+  search(client, "code", query, sort, order, limit, page)
 
 proc searchIssues*(
     client: GithubApiClient,
@@ -58,7 +58,7 @@ proc searchIssues*(
     limit: int = 100,
     page: int = 1): Response =
 
-    search(client, "issues", query, sort, order, limit, page)
+  search(client, "issues", query, sort, order, limit, page)
 
 proc searchUsers*(
     client: GithubApiClient,
@@ -68,4 +68,4 @@ proc searchUsers*(
     limit: int = 100,
     page: int = 1): Response =
 
-    search(client, "users", query, sort, order, limit, page)
+  search(client, "users", query, sort, order, limit, page)
