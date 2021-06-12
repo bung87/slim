@@ -6,7 +6,7 @@ description   = "nim package manager"
 license       = "MIT"
 srcDir        = "src"
 installExt    = @["nim"]
-namedBin = {"slim": "slimpkg/nimble/nimble.nim"}.toTable()
+namedBin = {"slimpkg/nimble/nimble":"slim" }.toTable()
 
 
 
