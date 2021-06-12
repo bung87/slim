@@ -13,4 +13,3 @@ bin           = @["slim"]
 
 requires "nim >= 1.4.8"
 requires "compiler"
-requires "hnimast"
