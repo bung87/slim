@@ -11,5 +11,6 @@ bin           = @["slim"]
 
 # Dependencies
 
-requires "nim >= 1.5.1"
+requires "nim >= 1.4.8"
+requires "compiler"
 requires "hnimast"

@@ -329,3 +329,12 @@ proc deleteRepo*(
 
   var path = "/repos" / owner / repo
   client.request(path, httpMethod = $HttpDelete)
+
+proc getRawFile*(client: GithubApiClient,
+    owner: string,
+    repo: string, path: string): Response =
+  # /repos/{owner}/{repo}/contents/{path}
+  #
+  # https://docs.github.com/en/rest/reference/repos#get-repository-content
+  var path = "/repos" / owner / repo / "contents" / path
+  client.request(path, httpMethod = $HttpGet, headers = {"accept": "application/vnd.github.v3.raw"}.newHttpHeaders())

@@ -31,7 +31,7 @@ type
     ## The client object is responsible for connecting everything else to the GitHub API. It
     ## wraps `HttpClient` and provides a layer of abstraction on top.
     httpClient: HttpClient
-    baseUrl*: string
+    baseUrl*: Uri
     accessToken*: string
 
 proc toQueryString*(json: JsonNode): string =
@@ -84,7 +84,7 @@ proc newGithubApiClient*(
 
   GithubApiClient(
       httpClient: httpClient,
-      baseUrl: "https://api.github.com",
+      baseUrl: parseUri "https://api.github.com",
       accessToken: accessToken
   )
 
@@ -95,10 +95,9 @@ proc seqTo[T](data: string): seq[T] =
     result.add(repo.to(T))
 
 proc request*(client: GithubApiClient, path: string, body: string = "", query: JsonNode = nil,
-    httpMethod: string = $HttpGet): Response =
-  var url = $(parseUri(client.baseUrl) / path) & toQueryString(query)
-  var headers: HttpHeaders = nil
+    httpMethod: string = $HttpGet, headers = newHttpHeaders()): Response =
+  var url = $(client.baseUrl / path) & toQueryString(query)
   if client.accessToken.len > 0:
-    headers = newHttpHeaders({"Authorization": "token " & client.accessToken})
+    headers["Authorization"] = "token " & client.accessToken
   client.httpClient.request(url, httpMethod, body, headers)
 
