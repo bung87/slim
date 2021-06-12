@@ -13,3 +13,6 @@ bin           = @["slim"]
 
 requires "nim >= 1.4.8"
 requires "compiler"
+
+task atask, "des":
+  requires "b"

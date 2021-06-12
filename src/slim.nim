@@ -1,9 +1,11 @@
 import os
-import hnimast/compiler_aux
+import slimpkg/hnimast/nimble_helper
 # import slimpkg/submodule
-
+import sets
 when isMainModule:
   let p = currentSourcePath.parentDir.parentDir / "slim.nimble"
   echo p
   let c = readFile(p)
-  echo $parsePackageInfo(c)
+  let info = parsePackageInfo(c)
+  echo $info.nimbleTasks
+  echo $info.requires

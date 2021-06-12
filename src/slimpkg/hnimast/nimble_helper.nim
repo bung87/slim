@@ -154,7 +154,11 @@ proc parsePackageInfoNims*(
                       "Unhandled node kind for requires argument: \n" &
                         treeRepr(arg))
 
-            of "task": res.nimbleTasks.incl node[1].getStrVal()
+            of "task":
+              # for c in node[^1]:
+              #   echo c.kind
+              #   echo c[0].getStrVal().normalize() == "requires"
+              res.nimbleTasks.incl node[1].getStrVal()
             of "after": res.postHooks.incl node[1].getStrVal()
             of "before": res.postHooks.incl node[1].getStrVal()
             of "foreigndep": res.foreignDeps.add node[1].getStrVal()
@@ -210,10 +214,9 @@ proc parsePackageInfoNims*(
             of "backend": res.backend = node[1].getStrValues()[0]
             of "name": res.name = node[1].getStrValues()[0]
             of "bin", "installext", "skipdirs", "installdirs", "skipext",
-               "skipfiles", "installfiles"
-              :
+               "skipfiles", "installfiles":
 
-            let values = node[1].getStrValues()
+              let values = node[1].getStrValues()
 
               case property:
                 of "bin":
