@@ -1206,8 +1206,9 @@ proc doAction(options: var Options) =
     if command in pkgInfo.nimbleTasks:
       let c = readFile(nimbleFile)
       let info = parsePackageInfo(c)
-      pkgInfo.requires.add info.taskDeps[command]
-      discard processDeps(pkgInfo, options)
+      if info.taskDeps.hasKey(command):
+        pkgInfo.requires.add info.taskDeps[command]
+        discard processDeps(pkgInfo, options)
       # If valid task defined in nimscript, run it
       var execResult: ExecutionResult[bool]
       if execCustom(nimbleFile, options, execResult):
