@@ -6,6 +6,7 @@ import os, strutils, sets
 import packageparser, common, packageinfo, options, nimscriptwrapper, cli,
        version
 
+
 proc execHook*(options: Options, hookAction: ActionType, before: bool): bool =
   ## Returns whether to continue.
   result = true
@@ -19,7 +20,7 @@ proc execHook*(options: Options, hookAction: ActionType, before: bool): bool =
     nimbleFile = findNimbleFile(getCurrentDir(), true)
   except NimbleError: return true
   # PackageInfos are cached so we can read them as many times as we want.
-  let pkgInfo = getPkgInfoFromFile(nimbleFile, options)
+  var pkgInfo = getPkgInfoFromFile(nimbleFile, options)
   let actionName =
     if hookAction == actionCustom: options.action.command
     else: ($hookAction)[6 .. ^1]
@@ -40,7 +41,7 @@ proc execCustom*(nimbleFile: string, options: Options,
 
   if not nimbleFile.isNimScript(options):
     writeHelp()
-  
+
   execResult = execTask(nimbleFile, options.action.command, options)
   if not execResult.success:
     raiseNimbleError(msg = "Failed to execute task $1 in $2" %

@@ -73,7 +73,7 @@ proc getStrValues(node: PNode): seq[string] =
 
   return values
 
-proc parseRequiresArg(node:seq[PNode]):seq[PkgTuple] = 
+proc parseRequiresArg(node: seq[PNode]): seq[PkgTuple] =
   for arg in node:
     case arg.kind:
       of hast_common.nkStrKinds:
@@ -162,10 +162,19 @@ proc parsePackageInfoNims*(
                     res.taskDeps[taskName].add parseRequiresArg(c[1 ..^ 1])
                   else:
                     res.taskDeps[taskName] = parseRequiresArg(c[1 ..^ 1])
-                
+
               res.nimbleTasks.incl taskName
             of "after": res.postHooks.incl node[1].getStrVal()
-            of "before": res.postHooks.incl node[1].getStrVal()
+            of "before":
+              let name = node[1].getStrVal()
+              for c in node[^1]:
+                if c[0].getStrVal().normalize() == "requires":
+                  if res.preDeps.hasKey(name):
+                    res.preDeps[name].add parseRequiresArg(c[1 ..^ 1])
+                  else:
+                    res.preDeps[name] = parseRequiresArg(c[1 ..^ 1])
+
+              res.preHooks.incl name
             of "foreigndep": res.foreignDeps.add node[1].getStrVal()
             of "switch", "mkdir", "hint", "writefile", "exec":
               discard

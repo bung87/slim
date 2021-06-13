@@ -21,6 +21,7 @@ when not defined(nimscript):
       nimbleTasks*: HashSet[string] ## All tasks defined in the Nimble file
       postHooks*: HashSet[string]   ## Useful to know so that Nimble doesn't execHook unnecessarily
       preHooks*: HashSet[string]
+      preDeps*: Table[string, seq[PkgTuple]]
       name*: string
       ## The version specified in the .nimble file.Assuming info is non-minimal,
       ## it will always be a non-special version such as '0.1.4'.
@@ -38,7 +39,7 @@ when not defined(nimscript):
       installExt*: seq[string]
       requires*: seq[PkgTuple]
       bin*: Table[string, string]
-      taskDeps*:Table[string, seq[PkgTuple]]
+      taskDeps*: Table[string, seq[PkgTuple]]
       binDir*: string
       srcDir*: string
       backend*: string

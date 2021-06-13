@@ -1,13 +1,14 @@
 import os
 import slimpkg/hnimast/nimble_helper
 # import slimpkg/submodule
-import sets,tables
+import sets, tables
 
 when isMainModule:
   let p = currentSourcePath.parentDir.parentDir / "slim.nimble"
   echo p
   let c = readFile(p)
   let info = parsePackageInfo(c)
-  echo $info.nimbleTasks
-  echo $info.requires
-  echo $info.taskDeps
+  echo "tasks:", $info.nimbleTasks
+  echo "requires:", $info.requires
+  echo "taskDeps:", $info.taskDeps
+  echo "preDeps:", $info.preDeps

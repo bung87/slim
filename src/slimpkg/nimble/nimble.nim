@@ -18,6 +18,7 @@ import ./packageinfo, ./version, ./tools,
        ./nimscriptexecutor, ./init
 
 import ./nimscriptwrapper
+import ../hnimast/nimble_helper
 
 proc refresh(options: Options) =
   ## Downloads the package list from the specified URL.
@@ -332,9 +333,9 @@ proc installFromDir(dir: string, requestedVer: VersionRange, options: Options,
     var filesInstalled = initHashSet[string]()
     iterInstallFiles(realDir, pkgInfo, options,
       proc (file: string) =
-        createDir(changeRoot(realDir, pkgDestDir, file.splitFile.dir))
-        let dest = changeRoot(realDir, pkgDestDir, file)
-        filesInstalled.incl copyFileD(file, dest)
+      createDir(changeRoot(realDir, pkgDestDir, file.splitFile.dir))
+      let dest = changeRoot(realDir, pkgDestDir, file)
+      filesInstalled.incl copyFileD(file, dest)
     )
 
     # Copy the .nimble file.
@@ -437,7 +438,7 @@ proc install*(packages: seq[PkgTuple],
       let (meth, url, metadata) = getDownloadInfo(pv, options, doPrompt)
       let subdir = metadata.getOrDefault("subdir")
       let (downloadDir, downloadVersion) =
-          downloadPkg(url, pv.ver, meth, subdir, options)
+        downloadPkg(url, pv.ver, meth, subdir, options)
       try:
         result = installFromDir(downloadDir, pv.ver, options, url)
       except BuildFailed:
@@ -482,8 +483,7 @@ proc execBackend(pkgInfo: PackageInfo, options: Options) =
   var pkgInfo = getPkgInfo(getCurrentDir(), options)
   nimScriptHint(pkgInfo)
   let deps = processDeps(pkginfo, options)
-
-  if not execHook(options, options.action.typ, true):
+  if not execHook(options, options.action.typ, before = true):
     raise newException(NimbleError, "Pre-hook prevented further execution.")
 
   var args = @["-d:NimblePkgVersion=" & pkgInfo.version]
@@ -670,7 +670,7 @@ proc dump(options: Options) =
           j[key].add %{
             "name": % name,
             # we serialize both: `ver` may be more convenient for tooling
-            # (no parsing needed); while `str` is more familiar.
+              # (no parsing needed); while `str` is more familiar.
             "str": % $ver,
             "ver": %* ver,
           }
@@ -1207,7 +1207,7 @@ proc doAction(options: var Options) =
       let c = readFile(nimbleFile)
       let info = parsePackageInfo(c)
       pkgInfo.requires.add info.taskDeps[command]
-      discard processDeps(pkgInfo,options)
+      discard processDeps(pkgInfo, options)
       # If valid task defined in nimscript, run it
       var execResult: ExecutionResult[bool]
       if execCustom(nimbleFile, options, execResult):
@@ -1217,7 +1217,12 @@ proc doAction(options: var Options) =
     elif command == "test":
       # If there is no task defined for the `test` task, we run the pre-defined
       # fallback logic.
-        test(options)
+      let c = readFile(nimbleFile)
+      let info = parsePackageInfo(c)
+      if info.preDeps.hasKey(command):
+        pkgInfo.requires.add info.preDeps[command]
+        discard processDeps(pkgInfo, options)
+      test(options)
     else:
       raiseNimbleError(msg = "Could not find task $1 in $2" %
                             [options.action.command, nimbleFile],

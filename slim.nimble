@@ -25,3 +25,10 @@ when defined(nimdistros):
 
 task atask, "des":
   requires "asynctest"
+# before atask:
+#   echo "before atask"
+#   requires "a"
+#   echo "end atask requires"  
+before test:
+  requires "asynctest"
+
