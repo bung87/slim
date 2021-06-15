@@ -156,8 +156,7 @@ proc parsePackageInfoNims*(
             of "task":
               let taskName = node[1].getStrVal()
               for c in node[^1]:
-                # echo c.kind
-                if c[0].getStrVal().normalize() == "requires":
+                if c.kind == nkCommand and c[0].getStrVal().normalize() == "requires":
                   if res.taskDeps.hasKey(taskName):
                     res.taskDeps[taskName].add parseRequiresArg(c[1 ..^ 1])
                   else:
@@ -168,7 +167,7 @@ proc parsePackageInfoNims*(
             of "before":
               let name = node[1].getStrVal()
               for c in node[^1]:
-                if c[0].getStrVal().normalize() == "requires":
+                if c.kind == nkCommand and c[0].getStrVal().normalize() == "requires":
                   if res.preDeps.hasKey(name):
                     res.preDeps[name].add parseRequiresArg(c[1 ..^ 1])
                   else:
