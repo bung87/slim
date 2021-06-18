@@ -479,8 +479,8 @@ proc execBackend(pkgInfo: PackageInfo, options: Options) =
   if not (fileExists(bin) or fileExists(binDotNim)):
     raise newException(NimbleError,
       "Specified file, " & bin & " or " & binDotNim & ", does not exist.")
-
-  var pkgInfo = getPkgInfo(getCurrentDir(), options)
+  # TODO is this needed ?
+  # var pkgInfo = getPkgInfo(getCurrentDir(), options)
   nimScriptHint(pkgInfo)
   let deps = processDeps(pkginfo, options)
   if not execHook(options, options.action.typ, before = true):
@@ -1039,7 +1039,11 @@ proc test(options: Options) =
   ## Executes all tests starting with 't' in the ``tests`` directory.
   ## Subdirectories are not walked.
   var pkgInfo = getPkgInfo(getCurrentDir(), options)
-
+  let c = readFile(pkgInfo.myPath)
+  let info = parsePackageInfo(c)
+  if info.preDeps.hasKey("test"):
+    for d in info.preDeps["test"]:
+      pkgInfo.requires.add d
   var
     files = toSeq(walkDir(getCurrentDir() / "tests"))
     tests, failures: int
