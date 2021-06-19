@@ -1206,12 +1206,17 @@ proc doAction(options: var Options) =
       command = options.action.command.normalize
       nimbleFile = findNimbleFile(getCurrentDir(), true)
     var pkgInfo = getPkgInfoFromFile(nimbleFile, options)
-
     if command in pkgInfo.nimbleTasks:
       let c = readFile(nimbleFile)
       let info = parsePackageInfo(c)
+      var taskOrPreHasRequries = false
       if info.taskDeps.hasKey(command):
+        taskOrPreHasRequries = true
         pkgInfo.requires.add info.taskDeps[command]
+      if info.preDeps.hasKey(command):
+        taskOrPreHasRequries = true
+        pkgInfo.requires.add info.preDeps[command]
+      if taskOrPreHasRequries:
         discard processDeps(pkgInfo, options)
       # If valid task defined in nimscript, run it
       var execResult: ExecutionResult[bool]

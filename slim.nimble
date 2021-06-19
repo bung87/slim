@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.3"
+version       = "0.1.5"
 author        = "bung87"
 description   = "nim package manager"
 license       = "MIT"
@@ -29,6 +29,8 @@ task atask, "des":
 #   echo "before atask"
 #   requires "a"
 #   echo "end atask requires"  
+task test,"overwrites test":
+  echo "custom test"
 before test:
   requires "asynctest"
 
