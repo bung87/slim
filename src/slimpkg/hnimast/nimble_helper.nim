@@ -1,6 +1,7 @@
 {.experimental: "caseStmtMacros".}
+import strutils
 import hmisc/other/[oswrap, hshell, hjson]
-import hmisc/helpers
+import hmisc/preludes/project_tasks
 import hmisc/types/[colortext]
 import std/[parseutils, sequtils, with, sets, tables, streams, parsecfg]
 import ./hast_common
@@ -20,7 +21,8 @@ export idents, modulegraphs, passes, lineinfos, pathutils, sem,
     ast, modules, condsyms, passaux, llstream, parser
 
 import compiler/astalgo except debug
-import fusion/matching
+import hmisc/ core/ all
+import hmisc/macros/matching
 import options
 export astalgo except debug
 
@@ -69,7 +71,7 @@ proc getStrValues(node: PNode): seq[string] =
       msg: "Cannot get property value from " & $node.kind)
 
   else:
-    raiseImplementKindError(node, node.treeRepr())
+    raise newImplementKindError(node, $node.treeRepr())
 
   return values
 
@@ -95,9 +97,9 @@ proc parseRequiresArg(node: seq[PNode]): seq[PkgTuple] =
           for req2 in req1.multiSplit():
             result.add parseRequires(req2)
       else:
-        raiseImplementError(
+        raise newImplementKindError(
           "Unhandled node kind for requires argument: \n" &
-            treeRepr(arg))
+            $treeRepr(arg))
 
 proc parsePackageInfoNims*(
     text: string, path: string = "<file>"): options.Option[PackageInfo] =
@@ -205,7 +207,7 @@ proc parsePackageInfoNims*(
 
                   else:
                     raiseImplementError(
-                      "Unhandled node structure: " & treeRepr(node[1]))
+                      "Unhandled node structure: " & $treeRepr(node[1]))
 
                 of nkIdent, nkBracketExpr, nkCall, nkCommand:
                   raise NimsParseFail(
@@ -215,7 +217,7 @@ proc parsePackageInfoNims*(
 
                 else:
                   raiseImplementError(
-                    "Unhandled node structure: " & treeRepr(node[1]))
+                    "Unhandled node structure: " & $treeRepr(node[1]))
 
 
             of "license": res.license = node[1].getStrValues()[0]
@@ -253,16 +255,16 @@ proc parsePackageInfoNims*(
 
                 else:
                   echo node[1]
-                  raiseImplementError(
+                  raise newImplementKindError(
                     "Unhandled node structure: \n" &
-                      treeRepr(node[1]))
+                      $treeRepr(node[1]))
 
             of "mode":
               discard
             else:
               raise NimsParseFail(
                 msg: "Assignment to unknown property: " & property &
-                  "\n" & treeRepr(node))
+                  "\n" & $treeRepr(node))
 
       of nkWhenStmt:
         for branch in node:
@@ -270,8 +272,8 @@ proc parsePackageInfoNims*(
             of nkElifBranch, nkElifExpr: parseStmts(branch[1], res)
             of nkElseExpr, nkElse: parseStmts(branch[0], res)
             else:
-              raiseImplementError(
-                "Unhandled node structure: " & treeRepr(branch))
+              raise newImplementKindError(
+                "Unhandled node structure: " & $treeRepr(branch))
 
       of nkCommentStmt, nkImportStmt, nkFromStmt, nkIncludeStmt,
          nkConstSection, nkVarSection, nkLetSection, nkTypeSection,
@@ -293,8 +295,8 @@ proc parsePackageInfoNims*(
         discard
 
       else:
-        raiseImplementError(
-          "Unhandled configuration file element: \n" & treeRepr(node))
+        raise newImplementKindError(
+          "Unhandled configuration file element: \n" & $treeRepr(node))
 
 
 
@@ -517,7 +519,7 @@ proc getPackageInfo*(dir: AbsDir, absPath: bool = true): PackageInfo =
   let file = dir.findNimbleFile()
   if file.isNone():
     # REFACTOR use error dereived from `hmisc.PathError`
-    raiseArgumentError(
+    raise newArgumentError(
       "Could not find nimble package in directory " & $dir)
 
   else:
