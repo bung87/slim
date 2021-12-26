@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.7"
+version       = "0.1.8"
 author        = "bung87"
 description   = "nim package manager"
 license       = "MIT"
