@@ -13,25 +13,25 @@ export idents, lineinfos
 import ./hnimast/[
   pnode_parse,
   hast_common,
-  pragmas,
-  proc_decl,
-  object_decl,
-  enum_decl,
-  idents_types,
-  hast_quote,
-  nim_decl,
+  # pragmas,
+  # proc_decl,
+  # object_decl,
+  # enum_decl,
+  # idents_types,
+  # hast_quote,
+  # nim_decl,
   # obj_field_macros
 ]
 
 export pnode_parse,
   hast_common,
-  pragmas,
-  proc_decl,
-  object_decl,
-  enum_decl,
-  idents_types,
-  hast_quote,
-  nim_decl,
+  # pragmas,
+  # proc_decl,
+  # object_decl,
+  # enum_decl,
+  # idents_types,
+  # hast_quote,
+  # nim_decl,
   # obj_field_macros
 
 
