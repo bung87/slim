@@ -3,6 +3,9 @@ import std/[macros, sequtils, strformat, strutils,
 import compiler/[ast, idents, lineinfos, renderer]
 import ../hmisc/types/colorstring
 import ../hmisc/helpers
+# import ../hmisc/base_errors
+# import ../hmisc/algo/htemplates
+# import ../hmisc/algo/halgorithm
 
 export ast, macros
 

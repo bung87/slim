@@ -1,5 +1,5 @@
 {.experimental: "caseStmtMacros".}
-import ../hmisc/other/[oswrap, hshell, hjson]
+import ../hmisc/other/[oswrap,  hjson]
 import ../hmisc/helpers
 import ../hmisc/types/[colortext]
 import std/[parseutils, sequtils, with, sets, tables, streams, parsecfg]
