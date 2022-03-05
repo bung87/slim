@@ -22,9 +22,8 @@ jobs:
         experimental: [false]
         nim-version:
           - 1.4.0
-          - 1.5.0
           - 1.6.0
-          # - devel
+          - devel
         include:
           - os: windows-latest
             experimental: true
