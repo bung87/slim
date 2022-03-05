@@ -1,8 +1,8 @@
 import std/[options, sequtils, strutils, strformat, sugar]
-import hmisc/helpers
-import hmisc/macros/cl_logic
+import ../hmisc/helpers
+import ../hmisc/macros/cl_logic
 import pragmas, hast_common
-import hmisc/algo/namegen
+import ../hmisc/algo/namegen
 
 type
   NTypeKind* = enum

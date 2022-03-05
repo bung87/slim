@@ -1,7 +1,7 @@
-import hmisc/other/blockfmt
-import hmisc/helpers
-import hmisc/hexceptions
-import hmisc/macros/cl_logic
+import ../hmisc/other/blockfmt
+import ../hmisc/helpers
+import ../hmisc/hexceptions
+import ../hmisc/macros/cl_logic
 
 import ../hnimast, nim_decl
 

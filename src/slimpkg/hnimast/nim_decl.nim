@@ -1,6 +1,6 @@
 import hast_common, proc_decl, idents_types, object_decl, enum_decl, pragmas
 import std/[sequtils]
-import hmisc/helpers
+import ../hmisc/helpers
 
 type
   NimDeclKind* = enum

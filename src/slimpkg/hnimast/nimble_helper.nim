@@ -1,7 +1,7 @@
 {.experimental: "caseStmtMacros".}
-import hmisc/other/[oswrap, hshell, hjson]
-import hmisc/helpers
-import hmisc/types/[colortext]
+import ../hmisc/other/[oswrap, hshell, hjson]
+import ../hmisc/helpers
+import ../hmisc/types/[colortext]
 import std/[parseutils, sequtils, with, sets, tables, streams, parsecfg]
 import ./hast_common
 import std/os as std_os

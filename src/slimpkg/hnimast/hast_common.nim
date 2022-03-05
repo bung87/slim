@@ -1,8 +1,8 @@
 import std/[macros, sequtils, strformat, strutils,
             tables, sets, options, math]
 import compiler/[ast, idents, lineinfos, renderer]
-import hmisc/types/colorstring
-import hmisc/helpers
+import ../hmisc/types/colorstring
+import ../hmisc/helpers
 
 export ast, macros
 
@@ -572,7 +572,7 @@ proc lispRepr*(typ: PType, colored: bool = true): string =
     if '\n' notin t:
       result &= " " & toRed(t, colored)
 
-func treeRepr*(
+proc treeRepr*(
     pnode: PNode, colored: bool = true,
     pathIndexed: bool = false,
     positionIndexed: bool = true,

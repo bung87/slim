@@ -1,7 +1,7 @@
 import hast_common
 import std/[strutils]
 import compiler/[lineinfos]
-import hmisc/hexceptions
+import ../hmisc/hexceptions
 
 func quoteAux(body: NimNode, resCall: string, pos: NimNode): NimNode =
   if body.kind == nnkPrefix and

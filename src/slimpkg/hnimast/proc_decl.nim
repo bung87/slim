@@ -1,5 +1,5 @@
 import hast_common, idents_types, pragmas
-import hmisc/helpers
+import ../hmisc/helpers
 import std/[sequtils, strutils, macros, options]
 import compiler/[ast, lineinfos]
 

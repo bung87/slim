@@ -1,8 +1,8 @@
 import hast_common, idents_types, pragmas
 import std/[macros, tables, options, strutils, sequtils]
 import compiler/[ast]
-import hmisc/helpers
-import hmisc/types/colorstring
+import ../hmisc/helpers
+import ../hmisc/types/colorstring
 import hast_common
 
 type

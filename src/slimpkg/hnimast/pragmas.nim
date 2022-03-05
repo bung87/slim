@@ -1,7 +1,7 @@
 import ./hast_common
 import compiler/[ast]
 import std/[macros, options, tables, sequtils]
-import hmisc/helpers
+import ../hmisc/helpers
 
 type
   Pragma*[N] = object

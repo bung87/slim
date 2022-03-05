@@ -13,7 +13,8 @@ namedBin = {"slimpkg/nimble/nimble":"slim" }.toTable()
 # Dependencies
 
 requires "nim >= 1.4.0"
-requires "hmisc == 0.11.14"
+requires "fusion"
+# requires "hmisc == 0.11.14"
 requires "compiler"
 
 when defined(nimdistros):

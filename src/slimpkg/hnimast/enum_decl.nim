@@ -1,7 +1,7 @@
 import hast_common, pragmas
 export hast_common
 
-import hmisc/helpers
+import ../hmisc/helpers
 import std/[macros, options, sugar, strformat, parseutils, sequtils]
 
 type

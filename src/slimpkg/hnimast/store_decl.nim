@@ -1,9 +1,9 @@
 import ./object_decl, ./enum_decl
 
 import hnimast
-import hmisc/hexceptions
-import hmisc/algo/halgorithm
-import hmisc/hdebug_misc
+import ../hmisc/hexceptions
+import ../hmisc/algo/halgorithm
+import ../hmisc/hdebug_misc
 import std/[macros, options, sequtils, strutils, tables]
 
 var objectImplMap {.compiletime.}: Table[string, NObjectDecl]

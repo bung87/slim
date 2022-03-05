@@ -1,0 +1,35 @@
+* ~hexception~
+
+**  multiple multiline annotations.
+
+** Expect compiles
+
+#+begin_src nim
+  {.define(plainStdout).}
+  import hmisc/hexceptions
+
+  macro expectCompiles(body: untyped): untyped =
+    result = toCompilesAssert(body, body, "Expression is ", addBody = false)
+
+  expectCompiles(1 + "12")
+#+end_src
+
+#+RESULTS:
+#+begin_example
+
+
+Failed to compile
+
+ 7
+ 10:15 expectCompiles(1 + "12")
+                      ^^^^^^^^
+                      |
+                      Expression is
+
+/tmp/babel-0WtR3d/nim_src_Yf058l.nim
+
+Raised in :0
+
+
+
+#+end_example
