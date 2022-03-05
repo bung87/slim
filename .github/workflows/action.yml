@@ -41,12 +41,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
 
-    - name: Cache choosenim
-      id: cache-choosenim
-      uses: actions/cache@v1
-      with:
-        path: ~/.choosenim
-        key: ${{ runner.os }}-choosenim-${{ matrix.nim-version}}
+    # - name: Cache choosenim
+    #   id: cache-choosenim
+    #   uses: actions/cache@v1
+    #   with:
+    #     path: ~/.choosenim
+    #     key: ${{ runner.os }}-choosenim-${{ matrix.nim-version}}
 
     - name: Cache nimble
       id: cache-nimble
