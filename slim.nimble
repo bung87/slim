@@ -2,7 +2,7 @@
 
 version       = "0.1.7"
 author        = "bung87"
-description   = "nim package manager"
+description   = "nim package manager support requires in nimble task"
 license       = "MIT"
 srcDir        = "src"
 installExt    = @["nim"]
