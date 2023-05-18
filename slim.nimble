@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.9"
+version       = "0.1.10"
 author        = "bung87"
 description   = "nim package manager support requires in nimble task"
 license       = "MIT"
