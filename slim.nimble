@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.11"
+version       = "0.1.12"
 author        = "bung87"
 description   = "nim package manager support requires in nimble task"
 license       = "MIT"
@@ -12,7 +12,7 @@ namedBin = {"slimpkg/nimble/nimble":"slim" }.toTable()
 
 # Dependencies
 
-requires "nim >= 1.4.0"
+# requires "nim >= 1.4.0"
 requires "fusion"
 # requires "hmisc == 0.11.14"
 requires "compiler"
