@@ -15,9 +15,11 @@ import ../types/hprimitives
 
 func zeroEqualCmp*[T](x, y: T): int = (if x == y: 0 else: -1)
 
+func defaultEqCmp[T](x, y: T): bool = x == y
+
 func longestCommonSubsequence*[T](
   x, y: seq[T],
-  itemCmp: EqCmpProc[T] = (proc(x, y: T): bool = x == y)
+  itemCmp: EqCmpProc[T] = defaultEqCmp[T]
     ): seq[tuple[matches: seq[T], xIndex, yIndex: seq[int]]] =
   ## Find longest common subsequence for `x` and `y`. Use `itemCmp` to
   ## compare for item equality. In case if there is more than one
@@ -129,7 +131,7 @@ func longestCommonSubsequence*[T](
 
 func longestCommonSubsequence*[T](
   x, y: openarray[T],
-  itemCmp: EqCmpProc[T] = (proc(x, y: T): bool = x == y)
+  itemCmp: EqCmpProc[T] = defaultEqCmp[T]
     ): seq[tuple[matches: seq[T], xIndex, yIndex: seq[int]]] =
   longestCommonSubsequence(toSeq(x), toSeq(y), itemCmp)
 
@@ -840,9 +842,7 @@ proc bestAlign*[T](
     alignQualityScore: ScoreProc[AlignSeq[T]],
     gapOpenPenalty: int = -2,
     gapExtPenalty: int = -1,
-    matchScore: ScoreCmpProc[T] = (
-      proc(a, b: T): int = (if a == b: 0 else: -1)
-    )
+    matchScore: ScoreCmpProc[T] = zeroEqualCmp[T]
   ): AlignSeq[T] =
   var
     bestScore = 0

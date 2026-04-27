@@ -204,15 +204,17 @@ func wrapText*[T, A](
 
 func joinText*[T, A](
   wrapped: seq[seq[Word[T, A]]],
-  toStr: proc(w: Word[T, A]): string =
-             (proc(w: Word[T, A]): string = $w)
-                   ): string =
-
+  toStr: proc(w: Word[T, A]): string
+): string =
   for line in wrapped:
     var lineBuf: string
     lineBuf.add line.mapIt(toStr(it)).join(" ")
-
     result.add lineBuf & "\n"
+
+func joinText*[T, A](
+  wrapped: seq[seq[Word[T, A]]]
+): string =
+  joinText(wrapped, proc(w: Word[T, A]): string = $w)
 
 func wrapMarkLines*(str: string, width: int): seq[string] =
   let buf = str.splitMark().wrapText(width)
