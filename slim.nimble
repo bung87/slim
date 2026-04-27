@@ -15,7 +15,9 @@ namedBin = {"slimpkg/nimble/nimble":"slim" }.toTable()
 # requires "nim >= 1.4.0"
 requires "fusion"
 # requires "hmisc == 0.11.14"
-requires "compiler"
+# The 'compiler' package is an alias for 'nim' in the nimble registry.
+# We only need the compiler modules from the standard library ($nim/lib/compiler/),
+# not a separate nimble package. Do not add 'requires "compiler"' here.
 
 when defined(nimdistros):
   import distros
