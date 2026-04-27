@@ -21,8 +21,8 @@ jobs:
           # - macOS-latest
         experimental: [false]
         nim-version:
-          - 1.4.0
-          - 1.6.0
+          - binary:1.4.0
+          - binary:1.6.0
           - devel
         include:
           - os: windows-latest
@@ -51,11 +51,11 @@ jobs:
           ${{ runner.os }}-nimble-v2-${{ matrix.nim-version}}-
       if: runner.os != 'Windows'
     - name: Setup nim
-      uses: jiro4989/setup-nim-action@v2
+      uses: iffy/install-nim@v5
       with:
-        nim-version: ${{ matrix.nim-version }}
-        repo-token: ${{ secrets.GITHUB_TOKEN }}
-        use-nightlies: ${{ matrix.nim-version == 'devel' }}
+        version: ${{ matrix.nim-version }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install Packages
       run: nimble install -d -y
