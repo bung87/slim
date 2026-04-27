@@ -21,8 +21,7 @@ jobs:
           # - macOS-latest
         experimental: [false]
         nim-version:
-          - binary:1.4.0
-          - binary:1.6.0
+          - stable
           - devel
         include:
           - os: windows-latest
