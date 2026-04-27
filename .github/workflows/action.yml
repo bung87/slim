@@ -50,11 +50,11 @@ jobs:
           ${{ runner.os }}-nimble-v2-${{ matrix.nim-version}}-
       if: runner.os != 'Windows'
     - name: Setup nim
-      uses: iffy/install-nim@v5
+      uses: jiro4989/setup-nim-action@v2
       with:
-        version: ${{ matrix.nim-version }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        nim-version: ${{ matrix.nim-version }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        use-nightlies: ${{ matrix.nim-version == 'devel' }}
 
     - name: Install Packages
       run: nimble install -d -y
