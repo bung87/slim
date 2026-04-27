@@ -55,6 +55,7 @@ jobs:
       with:
         nim-version: ${{ matrix.nim-version }}
         repo-token: ${{ secrets.GITHUB_TOKEN }}
+        use-nightlies: ${{ matrix.nim-version == 'devel' }}
 
     - name: Install Packages
       run: nimble install -d -y
