@@ -45,9 +45,9 @@ jobs:
       uses: actions/cache@v4
       with:
         path: ~/.nimble
-        key: ${{ runner.os }}-nimble-v2-${{ matrix.nim-version}}-${{ hashFiles('*.nimble') }}
+        key: ${{ runner.os }}-nimble-jiro2-${{ matrix.nim-version}}-${{ hashFiles('*.nimble') }}
         restore-keys: |
-          ${{ runner.os }}-nimble-v2-${{ matrix.nim-version}}-
+          ${{ runner.os }}-nimble-jiro2-${{ matrix.nim-version}}-
       if: runner.os != 'Windows'
     - name: Setup nim
       uses: jiro4989/setup-nim-action@v2
