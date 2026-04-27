@@ -15,27 +15,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          # - windows-latest
-          # - macOS-latest
-        experimental: [false]
-        nim-version:
-          - stable
-          - devel
         include:
+          - os: ubuntu-latest
+            nim-version: stable
+            experimental: false
+          - os: ubuntu-latest
+            nim-version: devel
+            experimental: false
           - os: windows-latest
+            nim-version: stable
             experimental: true
-            # nim-version: 1.6.0
-            #   - stable
-            #   - devel
-        # exclude:
           - os: macos-latest
+            nim-version: stable
             experimental: true
-            # nim-version: 1.6.0
-            #   - stable
-            #   - devel
-            # nim-version: stable
     steps:
     - name: Checkout
       uses: actions/checkout@v4
