@@ -26,25 +26,22 @@ proc initConfig(): Config =
   result.cloneUsingHttps = true
 
   result.packageLists = initTable[string, PackageList]()
-  let defaultPkgList = PackageList(name: "Official", urls: @[
-    "https://github.com/nim-lang/packages/raw/master/packages.json",
-    "https://irclogs.nim-lang.org/packages.json",
-    "https://nim-lang.org/nimble/packages.json"
-  ])
-  result.packageLists["official"] = defaultPkgList
 
 proc initPackageList(): PackageList =
   result.name = ""
   result.urls = @[]
   result.path = ""
 
-proc addCurrentPkgList(config: var Config, currentPackageList: PackageList) =
+proc addCurrentPkgList(config: var Config, currentPackageList: PackageList,
+                         hasUserPackageList: var bool) =
   if currentPackageList.name.len > 0:
     config.packageLists[currentPackageList.name.normalize] = currentPackageList
+    hasUserPackageList = true
 
 proc parseConfig*(): Config =
   result = initConfig()
   var confFile = getConfigDir() / "nimble" / "nimble.ini"
+  var hasUserPackageList = false
 
   var f = newFileStream(confFile, fmRead)
   if f == nil:
@@ -71,10 +68,10 @@ proc parseConfig*(): Config =
           if currentPackageList.urls.len > 0 and currentPackageList.path != "":
             raise newException(NimbleError, "Attempted to specify `url` and `path` for the same package list '$1'" %
                 currentPackageList.name)
-          addCurrentPkgList(result, currentPackageList)
+          addCurrentPkgList(result, currentPackageList, hasUserPackageList)
         break
       of cfgSectionStart:
-        addCurrentPkgList(result, currentPackageList)
+        addCurrentPkgList(result, currentPackageList, hasUserPackageList)
         currentSection = e.section
         case currentSection.normalize
         of "packagelist":
@@ -121,3 +118,9 @@ proc parseConfig*(): Config =
       of cfgError:
         raise newException(NimbleError, "Unable to parse config file: " & e.msg)
     close(p)
+  if not hasUserPackageList:
+    result.packageLists["official"] = PackageList(name: "Official", urls: @[
+      "https://github.com/nim-lang/packages/raw/master/packages.json",
+      "https://irclogs.nim-lang.org/packages.json",
+      "https://nim-lang.org/nimble/packages.json"
+    ])

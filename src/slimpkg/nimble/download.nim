@@ -1,14 +1,14 @@
 # Copyright (C) Dominik Picheta. All rights reserved.
 # BSD License. Look at license.txt for more info.
 
-import parseutils, os, osproc, strutils, tables, pegs, uri
+import parseutils, os, osproc, strutils, tables, pegs, uri, httpclient
 import packageinfo, packageparser, version, tools, common, options, cli
 from algorithm import SortOrder, sorted
 from sequtils import toSeq, filterIt, map
 
 type
   DownloadMethod* {.pure.} = enum
-    git = "git", hg = "hg"
+    git = "git", hg = "hg", http = "http"
 
 proc getSpecificDir(meth: DownloadMethod): string {.used.} =
   case meth
@@ -16,6 +16,8 @@ proc getSpecificDir(meth: DownloadMethod): string {.used.} =
     ".git"
   of DownloadMethod.hg:
     ".hg"
+  of DownloadMethod.http:
+    ""
 
 proc doCheckout(meth: DownloadMethod, downloadDir, branch: string) =
   case meth
@@ -29,6 +31,9 @@ proc doCheckout(meth: DownloadMethod, downloadDir, branch: string) =
   of DownloadMethod.hg:
     cd downloadDir:
       doCmd("hg checkout " & branch)
+  of DownloadMethod.http:
+    # HTTP packages are extracted directly, no checkout needed
+    discard
 
 proc doPull(meth: DownloadMethod, downloadDir: string) {.used.} =
   case meth
@@ -42,6 +47,9 @@ proc doPull(meth: DownloadMethod, downloadDir: string) {.used.} =
     doCheckout(meth, downloadDir, "default")
     cd downloadDir:
       doCmd("hg pull")
+  of DownloadMethod.http:
+    # HTTP packages are static tarballs, no pull needed
+    discard
 
 proc doClone(meth: DownloadMethod, url, downloadDir: string, branch = "",
              onlyTip = true) =
@@ -57,6 +65,9 @@ proc doClone(meth: DownloadMethod, url, downloadDir: string, branch = "",
       tipArg = if onlyTip: "-r tip " else: ""
       branchArg = if branch == "": "" else: "-b " & branch & " "
     doCmd("hg clone " & tipArg & branchArg & url & " " & downloadDir)
+  of DownloadMethod.http:
+    # HTTP packages are downloaded as tarballs, not cloned
+    discard
 
 proc getTagsList(dir: string, meth: DownloadMethod): seq[string] =
   cd dir:
@@ -66,6 +77,9 @@ proc getTagsList(dir: string, meth: DownloadMethod): seq[string] =
       output = execProcess("git tag")
     of DownloadMethod.hg:
       output = execProcess("hg tags")
+    of DownloadMethod.http:
+      # HTTP packages have no tags
+      return @[]
   if output.len > 0:
     case meth
     of DownloadMethod.git:
@@ -81,6 +95,9 @@ proc getTagsList(dir: string, meth: DownloadMethod): seq[string] =
         discard parseUntil(i, tag, ' ')
         if tag != "tip":
           result.add(tag)
+    of DownloadMethod.http:
+      # HTTP packages have no tags
+      result = @[]
   else:
     result = @[]
 
@@ -103,6 +120,9 @@ proc getTagsListRemote*(url: string, meth: DownloadMethod): seq[string] =
   of DownloadMethod.hg:
     # http://stackoverflow.com/questions/2039150/show-tags-for-remote-hg-repository
     raise newException(ValueError, "Hg doesn't support remote tag querying.")
+  of DownloadMethod.http:
+    # HTTP packages have no remote tags to query
+    return @[]
 
 proc getVersionList*(tags: seq[string]): OrderedTable[Version, string] =
   ## Return an ordered table of Version -> git tag label.  Ordering is
@@ -124,6 +144,7 @@ proc getDownloadMethod*(meth: string): DownloadMethod =
   case meth
   of "git": return DownloadMethod.git
   of "hg", "mercurial": return DownloadMethod.hg
+  of "http": return DownloadMethod.http
   else:
     raise newException(NimbleError, "Invalid download method: " & meth)
 
@@ -133,6 +154,7 @@ proc getHeadName*(meth: DownloadMethod): Version =
   case meth
   of DownloadMethod.git: newVersion("#head")
   of DownloadMethod.hg: newVersion("#tip")
+  of DownloadMethod.http: newVersion("#head")
 
 proc checkUrlType*(url: string): DownloadMethod =
   ## Determines the download method based on the URL.
@@ -156,6 +178,72 @@ proc getUrlData*(url: string): (string, Table[string, string]) =
 proc isURL*(name: string): bool =
   name.startsWith(peg" @'://' ")
 
+proc retrieveUrl*(url: string, options: Options): string =
+  display("Http", "Requesting " & url, priority = DebugPriority)
+  var client = newHttpClient(proxy = getProxy(options),
+                             userAgent = "nimble/" & nimbleVersion)
+  return client.getContent(url)
+
+proc doDownloadHttp(url: string, downloadDir: string, verRange: VersionRange,
+                    options: Options): Version =
+  let downloadUrl =
+    case verRange.kind
+    of verSpecial:
+      url & "/" & substr($verRange.spe, 1)
+    of verEq:
+      url & "/" & $verRange.ver
+    else:
+      url & "/head"
+  display("Downloading", downloadUrl)
+  let data = retrieveUrl(downloadUrl, options)
+  display("Completed", "downloading " & downloadUrl)
+
+  let filePath = downloadDir / "package.tar.gz"
+  downloadDir.createDir
+  writeFile(filePath, data)
+
+  display("Unpacking", filePath)
+  let cmd =
+    when defined(windows):
+      let tarExe = findExe("tar")
+      tarExe.quoteShell & " -C " & downloadDir.quoteShell &
+        " -xf " & filePath.quoteShell & " --strip-components 1 --force-local"
+    else:
+      "tar -C " & downloadDir.quoteShell &
+        " -xf " & filePath.quoteShell & " --strip-components 1"
+  let (output, exitCode) = doCmdEx(cmd)
+  if exitCode != QuitSuccess and not output.contains("Cannot create symlink to"):
+    raise newException(NimbleError,
+      "Execution failed with exit code $1\nCommand: $2\nOutput: $3" %
+      [$exitCode, cmd, output])
+  display("Completed", "unpacking " & filePath)
+
+  when defined(windows):
+    let listCmd = findExe("tar").quoteShell & " -ztvf " &
+      filePath.quoteShell & " --force-local"
+    let (cmdOutput, cmdExitCode) = doCmdEx(listCmd)
+    if cmdExitCode != QuitSuccess:
+      raise newException(NimbleError,
+        "Execution failed with exit code $1\nCommand: $2\nOutput: $3" %
+        [$cmdExitCode, listCmd, cmdOutput])
+    for line in cmdOutput.splitLines():
+      if line.contains(" -> "):
+        let parts = line.split
+        let linkPath = parts[^1]
+        let linkNameParts = parts[^3].split('/')
+        let linkName = linkNameParts[1 .. ^1].foldl(a / b)
+        writeFile(downloadDir / linkName, linkPath)
+
+  filePath.removeFile
+
+  let nimbleFile = findNimbleFile(downloadDir, true)
+  let pkgInfo = getPkgInfoFromFile(nimbleFile, options)
+  if pkgInfo.version != "":
+    result = newVersion(pkgInfo.version)
+  else:
+    raise newException(NimbleError,
+      "Could not determine version from downloaded package at " & downloadUrl)
+
 proc doDownload(url: string, downloadDir: string, verRange: VersionRange,
                  downMethod: DownloadMethod,
                  options: Options): Version =
@@ -177,7 +265,9 @@ proc doDownload(url: string, downloadDir: string, verRange: VersionRange,
       result = latest.ver
 
   removeDir(downloadDir)
-  if verRange.kind == verSpecial:
+  if downMethod == DownloadMethod.http:
+    result = doDownloadHttp(url, downloadDir, verRange, options)
+  elif verRange.kind == verSpecial:
     # We want a specific commit/branch/tag here.
     if verRange.spe == getHeadName(downMethod):
        # Grab HEAD.
@@ -216,6 +306,9 @@ proc doDownload(url: string, downloadDir: string, verRange: VersionRange,
           display("Switching", "to latest tagged version: " & latest.tag,
                   priority = MediumPriority)
           doCheckout(downMethod, downloadDir, latest.tag)
+    of DownloadMethod.http:
+      # Already handled above
+      discard
 
 proc downloadPkg*(url: string, verRange: VersionRange,
                  downMethod: DownloadMethod,
@@ -285,6 +378,8 @@ proc echoPackageVersions*(pkg: Package) =
   of DownloadMethod.hg:
     echo("  versions:    (Remote tag retrieval not supported by " &
         pkg.downloadMethod & ")")
+  of DownloadMethod.http:
+    echo("  versions:    (Version info from registry only)")
 
 when isMainModule:
   # Test version sorting
